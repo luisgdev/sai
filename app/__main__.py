@@ -1,13 +1,13 @@
 """Main module."""
 
 import asyncio
-import json
 from pprint import pformat
-from typing import Any, AsyncGenerator
 
-import config
 import assets
+import config
 import httpx
+import utils
+from llm import OllamaError, OllamaHandler
 from rich.console import Console
 from rich.live import Live
 from rich.markdown import Markdown
@@ -15,50 +15,24 @@ from rich.panel import Panel
 
 console = Console()
 
-
-class OllamaError(Exception):
-    """Exception raised when Ollama API responded with an error."""
+ollama_handler = OllamaHandler(url=config.OLLAMA_URL, timeout=config.HTTP_TIMEOUT)
 
 
-async def stream_ollama_response(url: str, payload: dict) -> AsyncGenerator[str, Any]:
-    """Sends a POST request to the Ollama API and streams the response in real time."""
-    async with httpx.AsyncClient(timeout=config.HTTP_TIMEOUT) as client:
-        async with client.stream("POST", f"{url}/api/generate", json=payload) as response:
-            md_text = ""
-            is_thinking = False
-            async for chunk in response.aiter_text():
-                data = json.loads(chunk)
-                if "error" in data:
-                    raise OllamaError(data["error"])
-                if "thinking" in data:
-                    if not is_thinking:
-                        md_text += "THINKING 🧠: "
-                        is_thinking = True
-                    md_text += data["thinking"]
-                else:
-                    if is_thinking:
-                        md_text += "\n\n---\n"
-                        is_thinking = False
-                    md_text += data.get("response", "\n")
-                yield md_text
-
-
-async def process_ollama_response(query: str) -> None:
+async def process_ollama_response(query: str, model_name: str = config.OLLAMA_MODEL) -> None:
     """Process Ollama response in real time."""
     with Live(console=console, refresh_per_second=config.CLI_REFRESH_TIME) as live:
         panel = Panel(
             renderable="",
             title="Generating ⏳",
-            subtitle=config.OLLAMA_MODEL,
+            subtitle=model_name,
             title_align="right",
             padding=(0, 1),
             border_style="yellow",
             expand=False,
         )
         try:
-            async for chunk in stream_ollama_response(
-                url=config.OLLAMA_URL,
-                payload={"model": config.OLLAMA_MODEL, "prompt": query},
+            async for chunk in ollama_handler.stream_response(
+                payload={"model": model_name, "prompt": query},
             ):
                 panel.renderable = Markdown(chunk)
                 live.update(panel)
@@ -80,16 +54,23 @@ def main():
     )
     console.print(main_panel)
     query = ""
+    model = config.OLLAMA_MODEL
     while query != "/quit":
         query = input("> ")
         if query == "/help":
             main_panel.renderable = Markdown(assets.HELP_MESSAGE)
             console.print(main_panel)
-            continue
-        if query == "/quit":
+        elif query == "/model":
+            models = asyncio.run(ollama_handler.list_models())
+            model = utils.item_selection_input(
+                message="Select the model to use: ",
+                items=models,
+            )
+            console.print(f"Selected model: {model}")
+        elif query == "/quit":
             console.print("Goodbye!")
         else:
-            asyncio.run(process_ollama_response(query=query))
+            asyncio.run(process_ollama_response(query=query, model_name=model))
 
 
 if __name__ == "__main__":
