@@ -18,12 +18,14 @@ console = Console()
 ollama_handler = OllamaHandler(url=config.OLLAMA_URL, timeout=config.HTTP_TIMEOUT)
 
 
-async def process_ollama_response(query: str, model_name: str = config.OLLAMA_MODEL) -> None:
+async def process_ollama_response(
+    messages: list[dict[str, str]], model_name: str = config.OLLAMA_MODEL
+) -> str | None:
     """Process Ollama response in real time."""
     with Live(console=console, refresh_per_second=config.CLI_REFRESH_TIME) as live:
         panel = Panel(
             renderable="",
-            title="Generating ⏳",
+            title="Generating :hourglass_flowing_sand:",
             subtitle=model_name,
             title_align="right",
             padding=(0, 1),
@@ -32,12 +34,13 @@ async def process_ollama_response(query: str, model_name: str = config.OLLAMA_MO
         )
         try:
             async for chunk in ollama_handler.stream_response(
-                payload={"model": model_name, "prompt": query},
+                payload={"model": model_name, "messages": messages},
             ):
                 panel.renderable = Markdown(chunk)
                 live.update(panel)
-            panel.title = "LLM Response ✔️"
+            panel.title = "LLM Response :heavy_check_mark:"
             live.update(panel)
+            return panel.renderable.markup
         except httpx.ConnectError as error:
             console.log(pformat(error))
         except OllamaError as error:
@@ -52,9 +55,10 @@ def main():
         border_style="blue",
         expand=False,
     )
-    console.print(main_panel)
-    query = ""
+    messages: list[dict[str, str]] = [{"role": "system", "content": assets.DEFAULT_PROMPT}]
+    query: str = ""
     model = config.OLLAMA_MODEL
+    console.print(main_panel)
     while query != "/quit":
         query = input("> ")
         if query == "/help":
@@ -68,9 +72,11 @@ def main():
             )
             console.print(f"Selected model: {model}")
         elif query == "/quit":
-            console.print("Goodbye!")
+            console.print("Goodbye! :wave:")
         else:
-            asyncio.run(process_ollama_response(query=query, model_name=model))
+            messages.append({"role": "user", "content": query})
+            response = asyncio.run(process_ollama_response(messages=messages, model_name=model))
+            messages.append({"role": "assistant", "content": response})
 
 
 if __name__ == "__main__":

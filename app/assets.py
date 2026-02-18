@@ -10,3 +10,5 @@ HELP_MESSAGE = """
 - `/quit` : Exit the application
 - `/model` : Select a model
 """
+
+DEFAULT_PROMPT: str = "You are a virtual assistant. Reply shortly and concise, in a fun tone."

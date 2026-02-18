@@ -28,7 +28,7 @@ class OllamaHandler:
         """Sends a POST request to the Ollama API and streams the response in real time."""
         async with httpx.AsyncClient(timeout=self.timeout) as client:
             async with client.stream(
-                "POST", f"{self.base_url}/api/generate", json=payload
+                "POST", f"{self.base_url}/api/chat", json=payload
             ) as response:
                 md_text = ""
                 is_thinking = False
@@ -36,14 +36,16 @@ class OllamaHandler:
                     data = json.loads(chunk)
                     if "error" in data:
                         raise OllamaError(data["error"])
-                    if "thinking" in data:
+                    if not "message" in data:
+                        raise OllamaError(f"No message in response: {chunk}")
+                    if "thinking" in data["message"]:
                         if not is_thinking:
                             md_text += "THINKING 🧠: "
                             is_thinking = True
-                        md_text += data["thinking"]
+                        md_text += data["message"]["thinking"]
                     else:
                         if is_thinking:
                             md_text += "\n\n---\n"
                             is_thinking = False
-                        md_text += data.get("response", "\n")
+                        md_text += data["message"].get("content", "\n")
                     yield md_text
