@@ -1,5 +1,5 @@
 [project]
-name = "sai"
+name = "sai-chat"
 version = "0.1.1"
 description = "Simple AI interface to chat with your LLM models from the terminal"
 readme = "README.md"
@@ -11,6 +11,15 @@ dependencies = [
     "rich>=14.3.2",
 ]
 
+[project.scripts]
+sai = "app.__main__:main"
+
+[project.urls]
+Homepage = "https://github.com/luisgdev/sai"
+Repository = "https://github.com/luisgdev/sai"
+Issues = "https://github.com/luisgdev/sai/issues"
+Documentation = "https://github.com/luisgdev/sai#readme"
+
 [build-system]
 requires = ["uv_build>=0.10.4,<0.11.0"]
 build-backend = "uv_build"
@@ -18,6 +27,3 @@ build-backend = "uv_build"
 [tool.uv.build-backend]
 module-name = "app"
 module-root = ""
-
-[project.scripts]
-sai = "app.__main__:main"
