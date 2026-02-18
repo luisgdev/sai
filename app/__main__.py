@@ -3,15 +3,14 @@
 import asyncio
 from pprint import pformat
 
-import assets
-import config
 import httpx
-import utils
-from llm import OllamaError, OllamaHandler
 from rich.console import Console
 from rich.live import Live
 from rich.markdown import Markdown
 from rich.panel import Panel
+
+from app import assets, config, utils
+from app.llm import OllamaError, OllamaHandler
 
 console = Console()
 
@@ -40,7 +39,7 @@ async def process_ollama_response(
                 live.update(panel)
             panel.title = "LLM Response :heavy_check_mark:"
             live.update(panel)
-            return panel.renderable.markup
+            return str(panel.renderable.markup)
         except httpx.ConnectError as error:
             console.log(pformat(error))
         except OllamaError as error:

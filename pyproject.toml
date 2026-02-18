@@ -1,7 +1,7 @@
 [project]
 name = "sai"
-version = "0.1.0"
-description = "Add your description here"
+version = "0.1.1"
+description = "Simple AI interface to chat with your LLM models from the terminal"
 readme = "README.md"
 requires-python = ">=3.12"
 dependencies = [
@@ -9,5 +9,15 @@ dependencies = [
     "inquirer>=3.4.1",
     "python-dotenv>=1.2.1",
     "rich>=14.3.2",
-    "typer>=0.24.0",
 ]
+
+[build-system]
+requires = ["uv_build>=0.10.4,<0.11.0"]
+build-backend = "uv_build"
+
+[tool.uv.build-backend]
+module-name = "app"
+module-root = ""
+
+[project.scripts]
+sai = "app.__main__:main"
