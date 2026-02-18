@@ -1,5 +1,5 @@
 # sai
-Simple AI interface to chat with your LLM models from the terminal
+Simple AI interface to chat with your Ollama models from the terminal
 
 # Features
 
@@ -8,6 +8,10 @@ Simple AI interface to chat with your LLM models from the terminal
 - [x] Autodetect and option to select models.
 - [ ] Add support for custom prompts.
 - [ ] Add conversation persistency (sessions).
+
+# Requirements
+An Ollama instance is required to get access to local models. 
+By default, the URL is set to `http://localhost:11434`.
 
 # Install
 The project is registered in PyPi: https://pypi.org/project/sai-chat/

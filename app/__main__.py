@@ -9,12 +9,12 @@ from rich.live import Live
 from rich.markdown import Markdown
 from rich.panel import Panel
 
-from app import assets, config, utils
+from app import assets, config, repository, utils
 from app.llm import OllamaError, OllamaHandler
 
 console = Console()
-
-ollama_handler = OllamaHandler(url=config.OLLAMA_URL, timeout=config.HTTP_TIMEOUT)
+ollama_settings = repository.get_ollama_settings()
+ollama_handler = OllamaHandler(url=ollama_settings.base_url, timeout=config.HTTP_TIMEOUT)
 
 
 async def process_ollama_response(
@@ -60,16 +60,29 @@ def main():
     console.print(main_panel)
     while query != "/quit":
         query = input("> ")
-        if query == "/help":
+        if query == "/setup":
+            console.print("Setup Ollama")
+            ollama_url = utils.text_input("Enter Ollama URL")
+            ollama_settings.base_url = ollama_url
+            ollama_settings.save()
+            ollama_handler.base_url = ollama_url
+            console.print(f"Ollama URL set: {ollama_settings.base_url}")
+        elif query == "/help":
             main_panel.renderable = Markdown(assets.HELP_MESSAGE)
             console.print(main_panel)
         elif query == "/model":
-            models = asyncio.run(ollama_handler.list_models())
-            model = utils.item_selection_input(
-                message="Select the model to use: ",
-                items=models,
-            )
-            console.print(f"Selected model: {model}")
+            try:
+                models = asyncio.run(ollama_handler.list_models())
+                model = utils.item_selection_input(
+                    message="Select the model to use",
+                    items=models,
+                )
+                console.print(f"Selected model: {model}")
+                ollama_settings.model_name = model
+                ollama_settings.save()
+            except (httpx.ConnectError, httpx.UnsupportedProtocol) as error:
+                console.log(pformat(error))
+                console.print("Tip: Make sure Ollama is running and run `/setup` to set the URL.")
         elif query == "/quit":
             console.print("Goodbye! :wave:")
         else:
