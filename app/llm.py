@@ -24,7 +24,7 @@ class OllamaHandler:
             models = [item["model"] for item in result.json()["models"]]
             return models
 
-    async def stream_response(self, payload: dict) -> AsyncGenerator[str, Any]:
+    async def stream_response(self, payload: dict[str, Any]) -> AsyncGenerator[str, Any]:
         """Sends a POST request to the Ollama API and streams the response in real time."""
         async with httpx.AsyncClient(timeout=self.timeout) as client:
             async with client.stream(

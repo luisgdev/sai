@@ -6,7 +6,7 @@ Simple AI interface to chat with your Ollama models from the terminal
 - [x] Pretty print real time responses in Markdown, using `rich` library.
 - [x] Keep conversation context.
 - [x] Autodetect and option to select models.
-- [ ] Add support for custom prompts.
+- [x] Add support for custom prompts.
 - [ ] Add conversation persistency (sessions).
 
 # Requirements
@@ -14,13 +14,11 @@ An Ollama instance is required to get access to local models.
 By default, the URL is set to `http://localhost:11434`.
 
 # Install
-The project is registered in PyPi: https://pypi.org/project/sai-chat/
-
-So you can install it using any package manager of your preference like `pip`, 
+You can install it using any package manager of your preference like `pip`, 
 but the recommended way is `uv tool`.
 
 ## Recommended
-Using `uv tool`:
+Using `uv`:
 
 ```shell
 uv tool install sai-chat
@@ -36,14 +34,18 @@ luis@laptop:~ $ sai
 │                                                       │
 │ Available commands:                                   │
 │                                                       │
+│  • /setup : Setup Ollama URL and preferences          │
+│  • /model : Select a model                            │
+│  • /roles : List and select a role                    │
+│  • /role add : Create a new custom role               │
+│  • /role delete : Delete a custom role                │
 │  • /help : Show this help message                     │
 │  • /quit : Exit the application                       │
-│  • /model : Select a model                            │
 ╰───────────────────────────────────────────────────────╯
-> Hey                               
+> hi
 ╭────────────────────────────────────── LLM Response ✔ ─╮
-│ What's up? How can I help you today?                  │
-╰───────────────────── llama3.2:1b ─────────────────────╯
+│ Hi there! How can I help you today? 😊                │
+╰────────────────────── gemma3:1b ──────────────────────╯
 > 
 
 ```

@@ -10,14 +10,18 @@ def item_selection_input(message: str, items: list[str]) -> str:
         choices=items,
     )
     answers = inquirer.prompt([question])
-    return answers["value"]
+    if not answers:
+        raise KeyboardInterrupt("Selection cancelled by user")
+    return answers["value"]  # type: ignore[no-any-return]
 
 
-def text_input(message: str) -> str:
+def text_input(message: str) -> str | None:
     """Display a text input interface in the terminal."""
     question = inquirer.Text(
         name="value",
         message=message,
     )
     answers = inquirer.prompt([question])
-    return answers["value"]
+    if not answers:
+        return None
+    return answers["value"]  # type: ignore[no-any-return]
