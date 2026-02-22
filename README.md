@@ -7,6 +7,8 @@ Simple AI interface to chat with your Ollama models from the terminal
 - [x] Keep conversation context.
 - [x] Autodetect and option to select models.
 - [x] Add support for custom prompts.
+- [x] Add custom roles (reusable prompts).
+- [x] Improve performance by preloading models.
 - [ ] Add conversation persistency (sessions).
 
 # Requirements
@@ -43,7 +45,7 @@ luis@laptop:~ $ sai
 │  • /quit : Exit the application                       │
 ╰───────────────────────────────────────────────────────╯
 > hi
-╭────────────────────────────────────── LLM Response ✔ ─╮
+╭───────────────────────────────── Virtual Assistant ✔ ─╮
 │ Hi there! How can I help you today? 😊                │
 ╰────────────────────── gemma3:1b ──────────────────────╯
 > 

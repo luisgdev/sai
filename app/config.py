@@ -1,12 +1,12 @@
 """Config module."""
 
 import os
+import tomllib
 from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Self
 
 import tomli_w
-import tomllib
 from dotenv import load_dotenv
 
 load_dotenv()

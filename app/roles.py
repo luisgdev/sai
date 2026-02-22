@@ -1,9 +1,9 @@
 """Roles module for managing AI personas."""
 
+import tomllib
 from dataclasses import dataclass
 
 import tomli_w
-import tomllib
 
 from app.config import CONFIG_DIR
 
@@ -83,7 +83,8 @@ class RolesManager:
 
         return roles
 
-    def _load_custom_roles(self) -> list[Role]:
+    @staticmethod
+    def _load_custom_roles() -> list[Role]:
         """Load custom roles from TOML file."""
         if not ROLES_FILE.exists():
             return []
