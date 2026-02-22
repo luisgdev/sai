@@ -135,7 +135,7 @@ class ChatSession:
                         panel.renderable = Markdown(chunk)
                     live.update(panel)
                 if panel is not None:
-                    panel.title = "LLM Response :heavy_check_mark:"
+                    panel.title = f"{self.cfg.role} :heavy_check_mark:"
                     live.update(panel)
                     renderable = panel.renderable
                     if isinstance(renderable, Markdown):
