@@ -193,7 +193,7 @@ class ChatSession:
                     max_content_height = max(1, console.size.height - panel_overhead)
                     panel = _create_scrolling_panel(
                         content=chunk,
-                        title=f"[bold]{self.cfg.role}[/bold] is typing :pen:",
+                        title=f"[bold]{self.cfg.role}[/bold] is typing :hourglass_flowing_sand:",
                         subtitle=self.cfg.model,
                         border_style="yellow",
                         max_height=max_content_height,
