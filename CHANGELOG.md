@@ -11,9 +11,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Long responses were cut when the terminal width is exceeded, while the assistant is generating text. Fixed by implementing an auto-scroll mechanism in the response panel.
 
+### Added
+
+- Command validation. Every query starting with `/` is a command.
+
 ### Changed
 
 - Spinner dots now have random behavior.
+- Thinking emoji.
 
 ### Removed
 

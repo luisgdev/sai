@@ -10,9 +10,10 @@ from rich.live import Live
 from rich.markdown import Markdown
 from rich.panel import Panel
 from rich.segment import Segment, Segments
-from rich.spinner import Spinner, SPINNERS
+from rich.spinner import SPINNERS, Spinner
 
 from app import assets, config, utils
+from app.assets import COMMANDS
 from app.llm import OllamaError, OllamaHandler
 from app.roles import RolesManager
 
@@ -260,5 +261,10 @@ class ChatSession:
                 break
             elif not query:
                 pass
+            elif query.startswith("/") and query not in COMMANDS:
+                console.print(
+                    "[bold red]Error:[/bold red] not a valid command. "
+                    "Type `/help` to see available commands."
+                )
             else:
                 self.chat(query)

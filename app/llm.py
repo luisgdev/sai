@@ -46,7 +46,7 @@ class OllamaHandler:
                         raise OllamaError(f"No message in response: {chunk}")
                     if "thinking" in data["message"]:
                         if not is_thinking:
-                            md_text += "THINKING 🧠: "
+                            md_text += "THINKING 🤔: "
                             is_thinking = True
                         md_text += data["message"]["thinking"]
                     else:
