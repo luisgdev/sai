@@ -31,6 +31,26 @@ class ChatSession:
         """Recreate handler with current config."""
         self.handler = OllamaHandler(url=self.cfg.base_url, timeout=config.HTTP_TIMEOUT)
 
+    def _preload_current_model(self) -> None:
+        """Validate and preload current model with visual feedback."""
+        with console.status("[bold blue]Checking model availability...[/bold blue]"):
+            try:
+                models = asyncio.run(self.handler.list_models())
+                if self.cfg.model not in models:
+                    console.print(f"[yellow]Model '{self.cfg.model}' not found in Ollama.[/yellow]")
+                    self.select_model()
+                    return
+            except (httpx.ConnectError, httpx.UnsupportedProtocol):
+                console.print("[yellow]Could not check models - is Ollama running?[/yellow]")
+                return
+
+        with console.status(f"[bold blue]Loading model {self.cfg.model}...[/bold blue]"):
+            try:
+                asyncio.run(self.handler.preload_model(self.cfg.model))
+                console.print(f"[green]Model {self.cfg.model} ready![/green]")
+            except (httpx.ConnectError, httpx.UnsupportedProtocol):
+                console.print("[yellow]Could not preload model - is Ollama running?[/yellow]")
+
     def select_model(self) -> None:
         """Select model to use."""
         try:
@@ -41,6 +61,7 @@ class ChatSession:
             )
             self.cfg.model = model
             self.cfg.save()
+            self._preload_current_model()
         except (httpx.ConnectError, httpx.UnsupportedProtocol) as error:
             console.log(pformat(error))
             console.print("Tip: Make sure Ollama is running and run `/setup` to set the URL.")
@@ -163,6 +184,7 @@ class ChatSession:
             expand=False,
         )
         console.print(main_panel)
+        self._preload_current_model()
 
         while True:
             query = input("> ")

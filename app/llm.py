@@ -24,6 +24,12 @@ class OllamaHandler:
             models = [item["model"] for item in result.json()["models"]]
             return models
 
+    async def preload_model(self, model: str) -> bool:
+        """Preload a model into Ollama to get faster response times"""
+        async with httpx.AsyncClient(timeout=self.timeout) as client:
+            result = await client.post(url=f"{self.base_url}/api/chat", params={"model": model})
+            return result.json().get("done")
+
     async def stream_response(self, payload: dict[str, Any]) -> AsyncGenerator[str, Any]:
         """Sends a POST request to the Ollama API and streams the response in real time."""
         async with httpx.AsyncClient(timeout=self.timeout) as client:
