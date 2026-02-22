@@ -1,15 +1,12 @@
 """Config module."""
 
-import os
 import tomllib
 from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Self
 
 import tomli_w
-from dotenv import load_dotenv
 
-load_dotenv()
 
 DEFAULT_BASE_URL = "http://localhost:11434"
 DEFAULT_MODEL = "llama3.2:1b"
@@ -49,8 +46,8 @@ class OllamaConfig:
         """Load config with priority: TOML > env vars > defaults."""
         toml_data = cls._load_toml()
         return cls(
-            base_url=toml_data.get("base_url") or os.environ.get("OLLAMA_URL", DEFAULT_BASE_URL),
-            model=toml_data.get("model") or os.environ.get("OLLAMA_MODEL", DEFAULT_MODEL),
+            base_url=toml_data.get("base_url") or DEFAULT_BASE_URL,
+            model=toml_data.get("model") or DEFAULT_MODEL,
             role=toml_data.get("role") or DEFAULT_ROLE,
         )
 

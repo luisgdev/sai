@@ -1,13 +1,12 @@
 [project]
 name = "sai-chat"
-version = "0.1.4"
+version = "0.1.5"
 description = "Simple AI interface to chat with your LLM models from the terminal"
 readme = "README.md"
 requires-python = ">=3.12"
 dependencies = [
     "httpx>=0.28.1",
     "inquirer>=3.4.1",
-    "python-dotenv>=1.2.1",
     "rich>=14.3.2",
     "tomli-w>=1.2.0",
 ]

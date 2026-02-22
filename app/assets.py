@@ -14,3 +14,10 @@ HELP_MESSAGE = """
 - `/help` : Show this help message
 - `/quit` : Exit the application
 """
+
+CURRENT_SETTINGS = """
+### Current Settings:
+- Ollama URL : `{url}`
+- Model Name : **{model}**
+- Active Role : *{role}*
+"""

@@ -1,20 +1,63 @@
 """Chat session management."""
 
 import asyncio
+import random
 from pprint import pformat
 
 import httpx
-from rich.console import Console
+from rich.console import Console, ConsoleOptions
 from rich.live import Live
 from rich.markdown import Markdown
 from rich.panel import Panel
-from rich.spinner import Spinner
+from rich.segment import Segment, Segments
+from rich.spinner import Spinner, SPINNERS
 
 from app import assets, config, utils
 from app.llm import OllamaError, OllamaHandler
 from app.roles import RolesManager
 
 console = Console()
+
+
+def _create_scrolling_panel(
+    content: str,
+    title: str,
+    subtitle: str,
+    border_style: str,
+    max_height: int,
+    options: ConsoleOptions,
+) -> Panel:
+    """Create a panel showing only the last N lines of markdown content."""
+    md = Markdown(content)
+    lines = console.render_lines(md, options)
+
+    if len(lines) <= max_height:
+        return Panel(
+            renderable=md,
+            title=title,
+            subtitle=subtitle,
+            title_align="right",
+            padding=(0, 1),
+            border_style=border_style,
+            expand=False,
+        )
+
+    visible_lines = lines[-max_height:]
+    segments = []
+    for i, line in enumerate(visible_lines):
+        segments.extend(line)
+        if i < len(visible_lines) - 1:
+            segments.append(Segment("\n"))
+
+    return Panel(
+        renderable=Segments(segments),
+        title=title,
+        subtitle=subtitle,
+        title_align="right",
+        padding=(0, 1),
+        border_style=border_style,
+        expand=False,
+    )
 
 
 class ChatSession:
@@ -137,33 +180,36 @@ class ChatSession:
 
     async def _process_response(self) -> str | None:
         """Process Ollama response in real time."""
-        spinner = Spinner("dots", text="Waiting for response...")
-        panel: Panel | None = None
+        spinner_name = random.choice(list(filter(lambda x: x.startswith("dots"), SPINNERS)))
+        spinner = Spinner(spinner_name, text="Waiting for response...")
+        panel_overhead: int = 5
+        content: str = ""
         with Live(spinner, console=console, refresh_per_second=config.CLI_REFRESH_TIME) as live:
             try:
                 async for chunk in self.handler.stream_response(
                     payload={"model": self.cfg.model, "messages": self.messages},
                 ):
-                    if panel is None:
-                        panel = Panel(
-                            renderable=Markdown(chunk),
-                            title="Generating :hourglass_flowing_sand:",
-                            subtitle=self.cfg.model,
-                            title_align="right",
-                            padding=(0, 1),
-                            border_style="yellow",
-                            expand=False,
-                        )
-                    else:
-                        panel.renderable = Markdown(chunk)
+                    content = chunk
+                    max_content_height = max(1, console.size.height - panel_overhead)
+                    panel = _create_scrolling_panel(
+                        content=chunk,
+                        title=f"[bold]{self.cfg.role}[/bold] is typing :pen:",
+                        subtitle=self.cfg.model,
+                        border_style="yellow",
+                        max_height=max_content_height,
+                        options=console.options,
+                    )
                     live.update(panel)
-                if panel is not None:
-                    panel.title = f"{self.cfg.role} :heavy_check_mark:"
+                if content:
+                    panel = Panel(
+                        renderable=Markdown(content),
+                        title=f"{self.cfg.role} :heavy_check_mark:",
+                        subtitle=self.cfg.model,
+                        title_align="right",
+                        border_style="green",
+                    )
                     live.update(panel)
-                    renderable = panel.renderable
-                    if isinstance(renderable, Markdown):
-                        return renderable.markup
-                    return str(renderable)
+                    return content
             except httpx.ConnectError as error:
                 console.log(pformat(error))
             except OllamaError as error:
@@ -192,13 +238,8 @@ class ChatSession:
             query = input("> ")
             if query == "/setup":
                 main_panel.renderable = Markdown(
-                    "\n".join(
-                        (
-                            "### Current Settings: ",
-                            f"- Ollama URL: `{self.cfg.base_url}`",
-                            f"- LLM Model Name: **{self.cfg.model}**",
-                            f"- Active Role: **{self.cfg.role}**",
-                        )
+                    assets.CURRENT_SETTINGS.format(
+                        model=self.cfg.model, url=self.cfg.base_url, role=self.cfg.role
                     )
                 )
                 console.print(main_panel)
